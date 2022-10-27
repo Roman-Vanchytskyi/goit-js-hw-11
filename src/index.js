@@ -21,8 +21,9 @@ const gallery = document.querySelector('.gallery');
 const inputData = form.elements.searchQuery.value.trim();
 form.addEventListener('submit', submitClick);
 
-async function submitClick(e) {
+function submitClick(e) {
   e.preventDefault();
+  localStorage.clear();
   gallery.innerHTML = '';
   page = 1;
   const inputData = form.elements.searchQuery.value.trim();
@@ -122,7 +123,6 @@ function onLoad(entries) {
 async function getNewData() {
   try {
     const inputData = localStorage.getItem('q');
-
     const resp = await axios.get('https://pixabay.com/api/', {
       params: {
         key: '30808385-c379b2b58cbf1cf4436fa7149',
