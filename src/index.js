@@ -6,14 +6,25 @@ const lightbox = new SimpleLightbox('.gallery a', {
   captionDelay: 250,
 });
 const axios = require('axios').default;
+let page = 1;
+
+const guard = document.querySelector('.guard');
+const options = {
+  root: null,
+  rootMargin: '40px',
+  threshold: 1,
+};
+const observer = new IntersectionObserver(onLoad, options);
 
 const form = document.querySelector('#search-form');
 const gallery = document.querySelector('.gallery');
+const inputData = form.elements.searchQuery.value.trim();
 form.addEventListener('submit', submitClick);
 
 async function submitClick(e) {
   e.preventDefault();
   gallery.innerHTML = '';
+  page = 1;
   const inputData = form.elements.searchQuery.value.trim();
 
   if (!inputData) {
@@ -23,15 +34,17 @@ async function submitClick(e) {
 
   getData()
     .then(function (arr) {
-      if (!arr.data.hits.length) {
+      if (!arr.data.totalHits) {
         Notiflix.Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
         return;
       }
+      Notiflix.Notify.success(`Hooray! We found ${arr.data.totalHits} images.`);
 
       gallery.insertAdjacentHTML('beforeend', createGallery(arr));
       lightbox.refresh();
+      observer.observe(guard);
     })
     .catch(function (error) {
       console.log(error);
@@ -40,13 +53,16 @@ async function submitClick(e) {
 }
 
 async function getData() {
+  const inputData = form.elements.searchQuery.value.trim();
   return await axios.get('https://pixabay.com/api/', {
     params: {
       key: '30808385-c379b2b58cbf1cf4436fa7149',
-      q: form.elements.searchQuery.value.trim(),
+      q: inputData,
       image_type: 'photo',
       orientation: 'horizontal',
       safesearch: true,
+      page: `${page}`,
+      per_page: 40,
     },
   });
 }
@@ -84,16 +100,20 @@ function createGallery(arr) {
     .join('');
 }
 
-// function createImage(galleryItems) {
-//   return galleryItems
-//     .map(({ preview, original, description }) => {
-//       return `<a class="gallery__item" href="${original}">
-//   <img class="gallery__image" src="${preview}" alt="${description}" />
-// </a>`;
-//     })
-//     .join('');
-// }
-
-// const imageContainer = document.querySelector('.gallery');
-
-// imageContainer.insertAdjacentHTML('beforeend', createImage(galleryItems));
+function onLoad(entries) {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      page += 1;
+      getData(page).then(arr => {
+        gallery.insertAdjacentHTML('beforeend', createGallery(arr));
+        lightbox.refresh();
+        if (page === 13) {
+          observer.unobserve(guard);
+          Notiflix.Notify.info(
+            "We're sorry, but you've reached the end of search results."
+          );
+        }
+      });
+    }
+  });
+}
