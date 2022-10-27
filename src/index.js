@@ -39,7 +39,7 @@ async function submitClick(e) {
 async function getData() {
   try {
     let inputData = form.elements.searchQuery.value.trim();
-    localStorage.setItem('q', JSON.stringify(inputData));
+    localStorage.setItem('q', inputData);
 
     const resp = await axios.get('https://pixabay.com/api/', {
       params: {
@@ -121,8 +121,8 @@ function onLoad(entries) {
 
 async function getNewData() {
   try {
-    const savedSettings = localStorage.getItem('q');
-    const inputData = JSON.parse(savedSettings);
+    const inputData = localStorage.getItem('q');
+
     const resp = await axios.get('https://pixabay.com/api/', {
       params: {
         key: '30808385-c379b2b58cbf1cf4436fa7149',
