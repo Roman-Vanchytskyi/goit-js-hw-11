@@ -39,6 +39,8 @@ async function submitClick(e) {
 async function getData() {
   try {
     let inputData = form.elements.searchQuery.value.trim();
+    localStorage.setItem('q', JSON.stringify(inputData));
+
     const resp = await axios.get('https://pixabay.com/api/', {
       params: {
         key: '30808385-c379b2b58cbf1cf4436fa7149',
@@ -50,7 +52,6 @@ async function getData() {
         per_page: 40,
       },
     });
-    console.log(resp);
 
     if (resp.data.totalHits === 0) {
       Notiflix.Notify.failure(
@@ -105,7 +106,8 @@ function onLoad(entries) {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       page += 1;
-      getData(page);
+
+      getNewData(page);
 
       if (page === 13) {
         observer.unobserve(guard);
@@ -115,4 +117,26 @@ function onLoad(entries) {
       }
     }
   });
+}
+
+async function getNewData() {
+  try {
+    const savedSettings = localStorage.getItem('q');
+    const inputData = JSON.parse(savedSettings);
+    const resp = await axios.get('https://pixabay.com/api/', {
+      params: {
+        key: '30808385-c379b2b58cbf1cf4436fa7149',
+        q: `${inputData}`,
+        image_type: 'photo',
+        orientation: 'horizontal',
+        safesearch: true,
+        page: `${page}`,
+        per_page: 40,
+      },
+    });
+    gallery.insertAdjacentHTML('beforeend', createGallery(resp));
+    lightbox.refresh();
+  } catch (err) {
+    console.log(err);
+  }
 }
