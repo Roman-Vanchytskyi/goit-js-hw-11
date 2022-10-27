@@ -38,11 +38,11 @@ async function submitClick(e) {
 
 async function getData() {
   try {
-    const inputData = form.elements.searchQuery.value.trim();
+    let inputData = form.elements.searchQuery.value.trim();
     const resp = await axios.get('https://pixabay.com/api/', {
       params: {
         key: '30808385-c379b2b58cbf1cf4436fa7149',
-        q: inputData,
+        q: `${inputData}`,
         image_type: 'photo',
         orientation: 'horizontal',
         safesearch: true,
@@ -105,14 +105,14 @@ function onLoad(entries) {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       page += 1;
-      getData(page).then(arr => {
-        if (page === 13) {
-          observer.unobserve(guard);
-          Notiflix.Notify.info(
-            "We're sorry, but you've reached the end of search results."
-          );
-        }
-      });
+      getData(page);
+
+      if (page === 13) {
+        observer.unobserve(guard);
+        Notiflix.Notify.info(
+          "We're sorry, but you've reached the end of search results."
+        );
+      }
     }
   });
 }
