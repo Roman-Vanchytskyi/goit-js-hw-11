@@ -34,7 +34,7 @@ async function submitClick(e) {
 
   getData()
     .then(function (arr) {
-      if (!arr.data.totalHits) {
+      if (arr.data.totalHits === 0) {
         Notiflix.Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
