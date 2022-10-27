@@ -32,43 +32,44 @@ async function submitClick(e) {
     return;
   }
 
-  getData()
-    .then(function (arr) {
-      if (arr.data.totalHits === 0) {
-        Notiflix.Notify.failure(
-          'Sorry, there are no images matching your search query. Please try again.'
-        );
-        return;
-      }
-      Notiflix.Notify.success(`Hooray! We found ${arr.data.totalHits} images.`);
-
-      gallery.insertAdjacentHTML('beforeend', createGallery(arr));
-      lightbox.refresh();
-      observer.observe(guard);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
+  getData();
   form.reset();
 }
 
 async function getData() {
-  const inputData = form.elements.searchQuery.value.trim();
-  return await axios.get('https://pixabay.com/api/', {
-    params: {
-      key: '30808385-c379b2b58cbf1cf4436fa7149',
-      q: inputData,
-      image_type: 'photo',
-      orientation: 'horizontal',
-      safesearch: true,
-      page: `${page}`,
-      per_page: 40,
-    },
-  });
+  try {
+    const inputData = form.elements.searchQuery.value.trim();
+    const resp = await axios.get('https://pixabay.com/api/', {
+      params: {
+        key: '30808385-c379b2b58cbf1cf4436fa7149',
+        q: inputData,
+        image_type: 'photo',
+        orientation: 'horizontal',
+        safesearch: true,
+        page: `${page}`,
+        per_page: 40,
+      },
+    });
+    console.log(resp);
+
+    if (resp.data.totalHits === 0) {
+      Notiflix.Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+      return;
+    }
+    Notiflix.Notify.success(`Hooray! We found ${resp.data.totalHits} images.`);
+
+    gallery.insertAdjacentHTML('beforeend', createGallery(resp));
+    lightbox.refresh();
+    observer.observe(guard);
+  } catch (err) {
+    console.log(err);
+  }
 }
 
-function createGallery(arr) {
-  return arr.data.hits
+function createGallery(resp) {
+  return resp.data.hits
     .map(
       ({
         webformatURL,
@@ -105,8 +106,6 @@ function onLoad(entries) {
     if (entry.isIntersecting) {
       page += 1;
       getData(page).then(arr => {
-        gallery.insertAdjacentHTML('beforeend', createGallery(arr));
-        lightbox.refresh();
         if (page === 13) {
           observer.unobserve(guard);
           Notiflix.Notify.info(
