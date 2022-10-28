@@ -1,3 +1,5 @@
+import * as $ from 'jquery';
+
 $(window).scroll(function () {
   var height = $(window).scrollTop();
   if (height > 100) {
